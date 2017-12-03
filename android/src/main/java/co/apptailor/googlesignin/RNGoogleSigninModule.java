@@ -4,6 +4,8 @@ import android.accounts.Account;
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
+import android.support.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.BaseActivityEventListener;
@@ -192,17 +194,30 @@ public class RNGoogleSigninModule extends ReactContextBaseJavaModule {
             return;
         }
 
-        Auth.GoogleSignInApi.signOut(_apiClient).setResultCallback(new ResultCallback<Status>() {
+        _apiClient.connect();
+        _apiClient.registerConnectionCallbacks(new GoogleApiClient.ConnectionCallbacks() {
             @Override
-            public void onResult(Status status) {
-                if (status.isSuccess()) {
-                    getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-                            .emit("RNGoogleSignOutSuccess", null);
-                } else {
-                    int code = status.getStatusCode();
-                    String error = GoogleSignInStatusCodes.getStatusCodeString(code);
-                    emitError("RNGoogleSignOutError", code, error);
+            public void onConnected(@Nullable Bundle bundle) {
+                if(_apiClient.isConnected()) {
+                    Auth.GoogleSignInApi.signOut(_apiClient).setResultCallback(new ResultCallback<Status>() {
+                        @Override
+                        public void onResult(Status status) {
+                            if (status.isSuccess()) {
+                                getReactApplicationContext().getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                                        .emit("RNGoogleSignOutSuccess", null);
+                            } else {
+                                int code = status.getStatusCode();
+                                String error = GoogleSignInStatusCodes.getStatusCodeString(code);
+                                emitError("RNGoogleSignOutError", code, error);
+                            }
+                        }
+                    });
                 }
+            }
+
+            @Override
+            public void onConnectionSuspended(int i) {
+
             }
         });
     }

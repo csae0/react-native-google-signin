@@ -129,6 +129,14 @@ RCT_EXPORT_METHOD(revokeAccess)
                                       annotation:annotation];
 }
 
++ (BOOL)application:(UIApplication *)app
+            openURL:(NSURL *)url
+            options:(NSDictionary<NSString *, id> *)options {
+    return [[GIDSignIn sharedInstance] handleURL:url
+                               sourceApplication:options[UIApplicationOpenURLOptionsSourceApplicationKey]
+                                      annotation:options[UIApplicationOpenURLOptionsAnnotationKey]];
+}
+
 #pragma mark - Internal Methods
 
 - (UIViewController *)topMostViewController {

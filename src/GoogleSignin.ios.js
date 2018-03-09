@@ -25,10 +25,16 @@ class GoogleSigninButton extends Component {
       GoogleSigninSingleton.signinIsInProcess = true;
       this.props.onPress && this.props.onPress();
     });
+
+    this._signInListener = NativeAppEventEmitter.addListener('RNGoogleSignInSuccess', (user) => {
+      GoogleSigninSingleton._user = user;
+      GoogleSigninSingleton.signinIsInProcess = false;
+    });
   }
 
   componentWillUnmount() {
     this._clickListener && this._clickListener.remove();
+    this._signInListener && this._signInListener.remove();
   }
 
   render() {
@@ -122,6 +128,7 @@ class GoogleSignin {
 
   signOut() {
     return new Promise((resolve, reject) => {
+      this._user = null;
       RNGoogleSignin.signOut();
       resolve();
     });
